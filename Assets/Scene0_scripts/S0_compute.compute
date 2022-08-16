@@ -1,0 +1,33 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel UpdateParticles
+
+struct Particle
+{
+    float3 position;
+    float4 color;
+    float speed;
+};
+
+float _time;
+RWStructuredBuffer<Particle> _particles;
+
+[numthreads(1024,1,1)]
+void UpdateParticles(uint3 id : SV_DispatchThreadID)
+{
+    float3 pos = _particles[id.x].position;
+    float sp = _particles[id.x].speed;
+
+    //pos.z -= 0.1f * sp + _time; // ça va de plus en plus vite
+    //pos.z -= 0.1f + sp * 5.0f;  // un peu moins vite et constant
+    pos.z -= sp + _time * 0.02;   // ça va de plus en plus vite mais progressivement 
+   
+    if (pos.z <= -200.0f)
+    {
+        pos.z = frac(sin(dot(pos.y, float2(12.9898, 4.1414))) * 43758.5453); 
+    }
+    _particles[id.x].position = pos;
+}
+
+
+
+
